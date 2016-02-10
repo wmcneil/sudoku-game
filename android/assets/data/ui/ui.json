@@ -1,5 +1,5 @@
 {
-  com.badlogic.gdx.graphics.g2d.BitmapFont: { default-font: { file: data/default.fnt } },
+
   com.badlogic.gdx.graphics.Color: {
     white: { r: 1, g: 1, b: 1, a: 1 },
     red: { r: 1, g: 0, b: 0, a: 1 },
@@ -17,6 +17,10 @@
     toggle: {
       down: button_down, up: button_default, checked: button_toggled,
       font: default-font, fontColor: white, checkedFontColor: yellow
+    },
+    toggle-icon: {
+      down: button_down, up: button_default, checked: button_toggled,
+      font: font-awesome, fontColor: white, checkedFontColor: yellow
     },
     disabled: {
       down: button_down, up: button_default,

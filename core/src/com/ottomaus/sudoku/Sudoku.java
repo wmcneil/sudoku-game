@@ -5,10 +5,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -132,37 +134,51 @@ public class Sudoku extends ApplicationAdapter {
         Table grid = new Table();
         ButtonGroup<TextButton> group = new ButtonGroup<TextButton>();
 
-            for (int x = low; x < high; x++) {
-                final int xCopy = x;
-                String label;
-                if(x == 0){
-                    label = "e";
-                } else {
-                    label = String.valueOf(x);
+        for (int x = low; x < high; x++) {
+            final int xCopy = x;
+            int spacing = 0;
+            String label = String.valueOf(x);
+            TextButton button = new TextButton(label, skin, "toggle");
+            button.addListener(new ClickListener() {
+                public void clicked(InputEvent event, float x, float y) {
+                    selectedNumber = xCopy;
                 }
-                TextButton button = new TextButton(label, skin, "toggle");
-                button.addListener(new ClickListener() {
-                    public void clicked(InputEvent event, float x, float y) {
-                        selectedNumber = xCopy;
-                        System.out.println("selected: "+String.valueOf(selectedNumber));
-                    }
-                });
-                grid.add(button).expand().fill();
-                group.add(button);
+            });
+            grid.add(button).expand().fill().padRight(spacing);
+            group.add(button);
+        }
+        TextButton eraserButton = new TextButton("\uf12d", skin, "toggle-icon");
+        eraserButton.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                selectedNumber = 0;
             }
-            grid.row();
+        });
+        grid.add(eraserButton).expand().fill().padLeft(20);
+        group.add(eraserButton);
+        grid.row();
         return grid;
     }
 
 	@Override
 	public void create () {
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("data/fonts/segoesc.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.size = 18;
+        BitmapFont font12 = generator.generateFont(parameter); // font size 12 pixels
+        generator.dispose();
+        generator = new FreeTypeFontGenerator(Gdx.files.internal("data/fonts/fontawesome.ttf"));
+        parameter.characters="\uF12D";
+        BitmapFont fontAwesome = generator.generateFont(parameter);
         TextureAtlas atlas;
 
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
         //skin = new Skin(Gdx.files.internal("data/uiskin.json"), new TextureAtlas("data/uiskin.atlas"));
-        skin = new Skin(Gdx.files.internal("data/ui/ui.json"), new TextureAtlas("data/ui/ui.atlas"));
-
+        skin = new Skin();
+        skin.add("default-font", font12, BitmapFont.class);
+        skin.add("font-awesome", fontAwesome, BitmapFont.class);
+        skin.addRegions(new TextureAtlas("data/ui/ui.atlas"));
+        skin.load(Gdx.files.internal("data/ui/ui.json"));
 		stage = new Stage();
 		Gdx.input.setInputProcessor(stage);
 
@@ -174,7 +190,7 @@ public class Sudoku extends ApplicationAdapter {
 		table.row();
 		table.add(createGrid(board)).fill().expand();
         table.row();
-        table.add(createNumberSelection(0, 10)).height(Value.percentHeight(0.1f, table)).fill().pad(20f,100f,0f,100f);
+        table.add(createNumberSelection(1, 10)).height(Value.percentHeight(0.1f, table)).fill().pad(20f,100f,0f,100f);
         stage.addActor(table);
 	}
 
