@@ -2,21 +2,35 @@ package com.ottomaus.sudoku;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
+
 
 public class Sudoku extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture img;
 	Stage stage;
+    TextButton[] gridButtons;
+
+    int selectedNumber = 0;
 
     int[][] board_solved = { { 4 , 8 , 3 , 9 , 2 , 1 , 6 , 5 , 7 },
         { 9 , 6 , 7 , 3 , 4 , 5 , 8 , 2 , 1 },
@@ -39,23 +53,102 @@ public class Sudoku extends ApplicationAdapter {
         { 0 , 0 , 5 , 0 , 1 , 0 , 3 , 0 , 0 },
     };
 
-    Skin skin;
+    Skin skin,newSkin;
+
+    public boolean isSolved() {
+        for(int y=0;y<9;y++){
+            for(int x=0;x<9;x++){
+                String label = gridButtons[x + y * 9].getText().toString().trim();
+                if (label.length() == 0) label = "0";
+                if (Integer.valueOf(label) != board_solved[y][x]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     public Table createGrid (int[][] board) {
         Table grid = new Table();
+
+        int prefWidth = Math.round((stage.getHeight() * 0.8f) / 9f);
+
+        gridButtons = new TextButton[9*9];
+
         for(int y=0;y<9;y++) {
             for (int x = 0; x < 9; x++) {
-                grid.add(new TextButton(String.valueOf(board[y][x]), skin)).expand().fill();
+                String buttonLabel = " ";
+                if(board[y][x] != 0) buttonLabel = String.valueOf(board[y][x]);
+                TextButton button = new TextButton(buttonLabel, skin);
+
+                /* TODO: Fix this unholy mess */
+                if(((x/3)%2==0 && (y/3)%2==0) || ((x/3)%2!=0 && (y/3)%2!=0)){
+                    if(board[y][x] != 0) {
+                        button = new TextButton(buttonLabel, skin, "disabled-alt");
+                        button.setTouchable(Touchable.disabled);
+                    } else {
+                        button = new TextButton(buttonLabel, skin, "alternate");
+                    }
+                } else if(board[y][x] != 0){
+                    button = new TextButton(buttonLabel, skin, "disabled");
+                    button.setTouchable(Touchable.disabled);
+                }
+
+                grid.add(button).width(prefWidth).height(prefWidth);
+
+                final int localX = x;
+                final int localY = y;
+
+                button.addListener(new ClickListener() {
+                    public void clicked(InputEvent event, float x, float y) {
+                        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
+                            selectedNumber = board_solved[localY][localX];
+                        }
+
+                        System.out.println("x:" + String.valueOf(localX) + "y:" + String.valueOf(localY));
+                        String label;
+                        if(selectedNumber == 0) {
+                            label = " ";
+                        } else {
+                            label = String.valueOf(selectedNumber);
+                        }
+                        gridButtons[localX + localY * 9].setText(label);
+
+                        if(isSolved() == true) {
+                            System.out.println("SOLVED");
+                        }
+                    }
+                });
+
+                gridButtons[x + y * 9] = button;
             }
             grid.row();
         }
+
         return grid;
     }
 
     public Table createNumberSelection (int low, int high) {
         Table grid = new Table();
+        ButtonGroup<TextButton> group = new ButtonGroup<TextButton>();
+
             for (int x = low; x < high; x++) {
-                grid.add(new TextButton(String.valueOf(x), skin)).expand().fill();
+                final int xCopy = x;
+                String label;
+                if(x == 0){
+                    label = "e";
+                } else {
+                    label = String.valueOf(x);
+                }
+                TextButton button = new TextButton(label, skin, "toggle");
+                button.addListener(new ClickListener() {
+                    public void clicked(InputEvent event, float x, float y) {
+                        selectedNumber = xCopy;
+                        System.out.println("selected: "+String.valueOf(selectedNumber));
+                    }
+                });
+                grid.add(button).expand().fill();
+                group.add(button);
             }
             grid.row();
         return grid;
@@ -63,22 +156,25 @@ public class Sudoku extends ApplicationAdapter {
 
 	@Override
 	public void create () {
+        TextureAtlas atlas;
+
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
+        //skin = new Skin(Gdx.files.internal("data/uiskin.json"), new TextureAtlas("data/uiskin.atlas"));
+        skin = new Skin(Gdx.files.internal("data/ui/ui.json"), new TextureAtlas("data/ui/ui.atlas"));
 
 		stage = new Stage();
 		Gdx.input.setInputProcessor(stage);
+
 		Table table = new Table();
 		Table grid = new Table();
-        skin = new Skin(Gdx.files.internal("data/uiskin.json"), new TextureAtlas("data/uiskin.atlas"));
-		Label button = new Label("Seppuku", skin);
-        table.setDebug(true);
+        table.setDebug(false);
 		table.setFillParent(true);
-		table.add(button).height(Value.percentHeight(0.1f, table)).fill();
+		table.add(new Label("Seppuku", skin)).height(Value.percentHeight(0.1f, table)).fill();
 		table.row();
 		table.add(createGrid(board)).fill().expand();
         table.row();
-        table.add(createNumberSelection(1, 10)).height(Value.percentHeight(0.1f, table)).fill().padTop(5f).padBottom(5f);
+        table.add(createNumberSelection(0, 10)).height(Value.percentHeight(0.1f, table)).fill().pad(20f,100f,0f,100f);
         stage.addActor(table);
 	}
 
@@ -93,6 +189,7 @@ public class Sudoku extends ApplicationAdapter {
 		batch.begin();
 		batch.draw(img, 0, 0);
 		batch.end();*/
+        Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();

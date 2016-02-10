@@ -1,0 +1,37 @@
+{
+  com.badlogic.gdx.graphics.g2d.BitmapFont: { default-font: { file: data/default.fnt } },
+  com.badlogic.gdx.graphics.Color: {
+    white: { r: 1, g: 1, b: 1, a: 1 },
+    red: { r: 1, g: 0, b: 0, a: 1 },
+    yellow: { r: 1.0, g: 0.8, b: 0, a: 1 }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
+    default: {
+      down: button_down, up: button_default,
+      font: default-font, fontColor: yellow
+    },
+    alternate: {
+      down: button_down, up: button_alternate_default,
+      font: default-font, fontColor: yellow
+    },
+    toggle: {
+      down: button_down, up: button_default, checked: button_toggled,
+      font: default-font, fontColor: white, checkedFontColor: yellow
+    },
+    disabled: {
+      down: button_down, up: button_default,
+      font: default-font, fontColor: white
+    }
+    disabled-alt: {
+      down: button_down, up: button_alternate_default,
+      font: default-font, fontColor: white
+    }
+    green: {
+      down: button_down, up: button_normal,
+      font: default-font, fontColor: { r: 0, g: 1, b: 0, a: 1 }
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
+    default: { font: default-font, fontColor: white }
+  },
+}
