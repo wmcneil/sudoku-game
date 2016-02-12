@@ -14,6 +14,14 @@ public class DesktopLauncher {
         TexturePacker.process(settings, "data/ui", "data/ui", "ui");
 
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
+        boolean portrait = false;
+        if(portrait == true) {
+            config.width = 800;
+            config.height = 1280;
+        } else {
+            config.width = 1280;
+            config.height = 800;
+        }
 		new LwjglApplication(new Sudoku(), config);
 	}
 }

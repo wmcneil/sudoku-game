@@ -6,12 +6,9 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.NinePatch;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
@@ -21,9 +18,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 
 public class Sudoku extends ApplicationAdapter {
@@ -73,8 +70,14 @@ public class Sudoku extends ApplicationAdapter {
     public Table createGrid (int[][] board) {
         Table grid = new Table();
 
-        int prefWidth = Math.round((stage.getHeight() * 0.8f) / 9f);
-
+        int prefHeight = Math.round((stage.getHeight() * 0.7f) / 9f);
+        int prefWidth = Math.round((stage.getWidth()) / 9f);
+        int prefSize;
+        if(prefWidth < prefHeight){
+            prefSize = prefWidth;
+        } else {
+            prefSize = prefHeight;
+        }
         gridButtons = new TextButton[9*9];
 
         for(int y=0;y<9;y++) {
@@ -96,7 +99,7 @@ public class Sudoku extends ApplicationAdapter {
                     button.setTouchable(Touchable.disabled);
                 }
 
-                grid.add(button).width(prefWidth).height(prefWidth);
+                grid.add(button).minWidth(prefSize).minHeight(prefSize);
 
                 final int localX = x;
                 final int localY = y;
@@ -179,18 +182,19 @@ public class Sudoku extends ApplicationAdapter {
         skin.add("font-awesome", fontAwesome, BitmapFont.class);
         skin.addRegions(new TextureAtlas("data/ui/ui.atlas"));
         skin.load(Gdx.files.internal("data/ui/ui.json"));
-		stage = new Stage();
+		stage = new Stage(new ScreenViewport());
 		Gdx.input.setInputProcessor(stage);
 
 		Table table = new Table();
-		Table grid = new Table();
         table.setDebug(false);
 		table.setFillParent(true);
-		table.add(new Label("Seppuku", skin)).height(Value.percentHeight(0.1f, table)).fill();
+        Label titleLabel = new Label("NeguSudoku", skin);
+		table.add(titleLabel).height(Value.percentHeight(0.1f, table)).fill();
+        titleLabel.setAlignment(Align.center);
 		table.row();
 		table.add(createGrid(board)).fill().expand();
         table.row();
-        table.add(createNumberSelection(1, 10)).height(Value.percentHeight(0.1f, table)).fill().pad(20f,100f,0f,100f);
+        table.add(createNumberSelection(1, 10)).height(Value.percentHeight(0.1f, table)).fill().pad(20f,5f,0f,5f);
         stage.addActor(table);
 	}
 
